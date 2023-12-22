@@ -22,7 +22,12 @@ public class RateLimiter {
   }
 
   public boolean pass() {
-    // TODO: Implementation
+    long now = System.currentTimeMillis();
+    redis.zremrangeByScore(label, 0, now - timeWindowSeconds * 1000);
+    if (redis.zcard(label) < maxRequestCount) {
+      redis.zadd(label, now, Long.toString(now));
+      return true;
+    }
     return false;
   }
 
